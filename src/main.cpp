@@ -201,7 +201,7 @@ int main() {
   	map_waypoints_dy.push_back(d_y);
   }
 
-	double ref_vel = 45.0;
+	double ref_vel = 0;
 	int lane = 1;
 
   h.onMessage([ &ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
@@ -356,8 +356,8 @@ int main() {
 
 						double x_add_on = 0;
 						
-						//Fill up the rest of our path planner after filling it with previous points, here we will always output 50 points
-						for(int i=1; i<=50-previous_path_x.size(); i++){
+						//Fill up the rest of our path planner after filling it with previous points, here we will always output 80 points
+						for(int i=1; i<=80-previous_path_x.size(); i++){
 
 							double N = (target_dist/(0.02*ref_vel/2.24));
 							double x_point = x_add_on+(target_x)/N;
