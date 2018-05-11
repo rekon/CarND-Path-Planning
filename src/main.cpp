@@ -260,7 +260,7 @@ int main() {
 								check_car_s+=((double)prev_size*0.02*check_speed);
 
 								if(check_car_s > car_s && (check_car_s-car_s) < 30 ){
-									//ref_vel = 29.5;
+									// ref_vel = 29.5;
 									too_close = true;
 								}
 							}
@@ -284,7 +284,7 @@ int main() {
 						if(prev_size < 2){
 
 							double prev_car_x = car_x - cos( car_yaw);
-							double prev_car_y= car_x - sin( car_yaw);
+							double prev_car_y = car_y - sin( car_yaw);
 
 							ptsx.push_back(prev_car_x);
 							ptsx.push_back(car_x);
@@ -333,6 +333,9 @@ int main() {
 						tk::spline s;
 
 						//set x,y points to the spline
+            // for(int i=0;i<ptsx.size();i++){
+            //   cout<<"ptsx: "<<ptsx[i]<<" ptsy: "<<ptsy[i]<<endl;
+            // }
 						s.set_points(ptsx,ptsy);
 
 						//define the actual x,y points to be used for planner
@@ -349,7 +352,7 @@ int main() {
 
 						double target_x = 30.0;
 						double target_y = s(target_x);
-						double target_dist = sqrt( target_x*target_x - target_y*target_y );
+						double target_dist = sqrt( target_x*target_x + target_y*target_y );
 
 						double x_add_on = 0;
 						
@@ -376,6 +379,8 @@ int main() {
 							next_y_vals.push_back(y_point);
 						}
 
+						// for(int i=0;i<next_x_vals.size();i++)
+						// 	cout<<"X_val: "<<next_x_vals[i]<<" Y_vals: "<<next_y_vals[i]<<endl;
 						// End
           	json msgJson;
 
