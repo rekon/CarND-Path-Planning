@@ -203,6 +203,7 @@ int main() {
 
 	double ref_vel = 0;
 	int lane = 1;
+  int intended_lane = 1;
 
   h.onMessage([ &ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
@@ -247,27 +248,46 @@ int main() {
 							car_s = end_path_s;
 						
 						bool too_close = false;
+						bool change_lane = false;
+            bool proximity[] = {false, false, false};
 
 						//find the relative velocity of front car
 						for( int i=0; i<sensor_fusion.size(); i++){
 							float d = sensor_fusion[i][6];
-							if( d < (2+4*lane+2) && d > (2+4*lane-2) ){
-								double vx = sensor_fusion[i][3];
-								double vy = sensor_fusion[i][4];
-								double check_speed = sqrt(vx*vx + vy*vy);
-								double check_car_s = sensor_fusion[i][5];
 
-								check_car_s+=((double)prev_size*0.02*check_speed);
+              double vx = sensor_fusion[i][3];
+              double vy = sensor_fusion[i][4];
+              double check_speed = sqrt(vx*vx + vy*vy);
+              double check_car_s = sensor_fusion[i][5];
+              check_car_s+=((double)prev_size*0.02*check_speed);
+
+							if( d < (2+4*lane+2) && d > (2+4*lane-2) ){
 
 								if(check_car_s > car_s && (check_car_s-car_s) < 30 ){
 									// ref_vel = 29.5;
 									too_close = true;
 								}
 							}
+              if( d > 0 && d < 4 && (check_car_s + 5 > car_s) && (check_car_s-car_s) < 30 )
+                proximity[0]=true;
+              else if( d > 4 && d < 8 && (check_car_s + 5 > car_s) &&  (check_car_s-car_s) < 30 )
+                proximity[1]=true;
+              else if( d > 8 && d < 12 && (check_car_s + 5 > car_s) &&  (check_car_s-car_s) < 30 )
+                proximity[2]=true;
 						}
 
-						if( too_close )
-							ref_vel -= 0.224;
+						if( too_close ){
+              if( lane == 0 && proximity[1] == false){
+                lane = 1;
+              } else if (lane == 1 && (proximity[0]==false || proximity[2]==false )){
+                lane = proximity[0]==false ? 0 : 2;
+              } else if( lane == 2 && proximity[1] == false){
+                lane = 1;
+              } else {
+                ref_vel -= 0.224;
+              }
+            }
+							
 						else if( ref_vel < 45 )
 							ref_vel +=0.224;
 
@@ -332,10 +352,10 @@ int main() {
 						//create spline
 						tk::spline s;
 
-						//set x,y points to the spline
             // for(int i=0;i<ptsx.size();i++){
             //   cout<<"ptsx: "<<ptsx[i]<<" ptsy: "<<ptsy[i]<<endl;
             // }
+            //set x,y points to the spline
 						s.set_points(ptsx,ptsy);
 
 						//define the actual x,y points to be used for planner
@@ -357,7 +377,7 @@ int main() {
 						double x_add_on = 0;
 						
 						//Fill up the rest of our path planner after filling it with previous points, here we will always output 80 points
-						for(int i=1; i<=80-previous_path_x.size(); i++){
+						for(int i=1; i<=50-previous_path_x.size(); i++){
 
 							double N = (target_dist/(0.02*ref_vel/2.24));
 							double x_point = x_add_on+(target_x)/N;
