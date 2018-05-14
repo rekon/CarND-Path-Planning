@@ -248,7 +248,6 @@ int main() {
 							car_s = end_path_s;
 						
 						bool too_close = false;
-						bool change_lane = false;
             bool proximity[] = {false, false, false};
 
 						//find the relative velocity of front car
@@ -264,7 +263,6 @@ int main() {
 							if( d < (2+4*lane+2) && d > (2+4*lane-2) ){
 
 								if(check_car_s > car_s && (check_car_s-car_s) < 30 ){
-									// ref_vel = 29.5;
 									too_close = true;
 								}
 							}
@@ -291,8 +289,6 @@ int main() {
 						else if( ref_vel < 45 )
 							ref_vel +=0.224;
 
-						//Create a space of evenly spaced waypoints at 30m
-						//Later we can interpolate these waypoints with a spline and fill it with more points that control 	speed
 
 						vector<double> ptsx, ptsy;
 
@@ -303,8 +299,8 @@ int main() {
 
 						if(prev_size < 2){
 
-							double prev_car_x = car_x - cos( car_yaw);
-							double prev_car_y = car_y - sin( car_yaw);
+							double prev_car_x = car_x - cos( car_yaw );
+							double prev_car_y = car_y - sin( car_yaw );
 
 							ptsx.push_back(prev_car_x);
 							ptsx.push_back(car_x);
@@ -327,6 +323,9 @@ int main() {
 							ptsy.push_back( ref_y_prev );
 							ptsy.push_back( ref_y );
 						}
+            
+						//Create a space of evenly spaced waypoints at 30m
+						//Later we can interpolate these waypoints with a spline and fill it with more points that control 	speed
 
 						vector<double> next_wp0 = getXY( car_s+30,(2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
 						vector<double> next_wp1 = getXY( car_s+60,(2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
@@ -355,6 +354,7 @@ int main() {
             // for(int i=0;i<ptsx.size();i++){
             //   cout<<"ptsx: "<<ptsx[i]<<" ptsy: "<<ptsy[i]<<endl;
             // }
+            
             //set x,y points to the spline
 						s.set_points(ptsx,ptsy);
 
@@ -377,7 +377,7 @@ int main() {
 						double x_add_on = 0;
 						
 						//Fill up the rest of our path planner after filling it with previous points, here we will always output 80 points
-						for(int i=1; i<=50-previous_path_x.size(); i++){
+						for(int i=1; i<=80-previous_path_x.size(); i++){
 
 							double N = (target_dist/(0.02*ref_vel/2.24));
 							double x_point = x_add_on+(target_x)/N;
